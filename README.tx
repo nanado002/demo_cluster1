@@ -1,0 +1,123 @@
+EADME file in plain text format that you can copy and paste:
+
+# EKS 2048 Game Deployment
+
+This project demonstrates how to deploy a 2048 game on AWS EKS (Elastic Kubernetes Service) with Fargate.
+
+## Prerequisites
+
+- AWS CLI configured with appropriate permissions
+- AWS account with EKS access
+- kubectl installed
+- eksctl installed
+
+## Deployment
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/eks-2048-demo.git
+cd eks-2048-demo
+```
+
+### 2. Configure AWS credentials
+```bash
+# Option 1: Configure AWS CLI
+aws configure
+
+# Option 2: Set environment variables
+export AWS_ACCESS_KEY_ID=your_access_key
+export AWS_SECRET_ACCESS_KEY=your_secret_key
+export AWS_REGION=us-east-1
+```
+
+### 3. Make the deployment script executable
+```bash
+chmod +x scripts/deploy.sh
+```
+
+### 4. Run the deployment
+```bash
+./scripts/deploy.sh
+```
+
+## Cleanup
+
+To delete the cluster and all resources:
+```bash
+chmod +x scripts/cleanup.sh
+./scripts/cleanup.sh
+```
+
+## Project Structure
+
+```
+eks-2048-demo/
+├── scripts/
+│   ├── deploy.sh          # Main deployment script
+│   └── cleanup.sh         # Cleanup script
+├── manifests/
+│   └── iam-policy.json    # IAM policy for load balancer controller
+├── docs/
+│   └── instructions.md    # Additional documentation
+└── README.md             # This file
+```
+
+## Architecture
+
+- EKS Cluster with Fargate (serverless)
+- AWS Load Balancer Controller for ingress management
+- 2048 game deployed in game-2048 namespace
+- Application Load Balancer (ALB) for external access
+- Fargate profiles for pod scheduling
+
+## Manual Steps (if needed)
+
+### Create cluster manually:
+```bash
+eksctl create cluster --name demo-cluster --region us-east-1 --fargate
+```
+
+### Deploy 2048 game manually:
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.5.4/docs/examples/2048/2048_full.yaml
+```
+
+### Check deployment status:
+```bash
+kubectl get pods -n game-2048
+kubectl get ingress -n game-2048
+```
+
+## Access the Application
+
+After deployment, get the ALB URL:
+```bash
+kubectl get ingress -n game-2048 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+echo "Access your game at: http://<ALB_URL>"
+```
+
+## Important Notes
+
+- **Cost**: Running EKS clusters incurs AWS costs. Remember to cleanup when done.
+- **Security**: Never commit AWS credentials to version control.
+- **Region**: Default region is us-east-1. Change in scripts if needed.
+- **Cleanup**: Always run cleanup script to avoid unexpected charges.
+
+## Troubleshooting
+
+### Common issues:
+1. Permissions errors: Ensure AWS IAM user has EKS permissions
+2. Load balancer not created: Check AWS Load Balancer Controller installation
+3. Pods pending: Verify Fargate profile configuration
+
+### Check cluster status:
+```bash
+eksctl get clusters --region us-east-1
+aws eks describe-cluster --name demo-cluster --region us-east-1
+```
+
+## License
+
+This project is for educational/demonstration purposes.
+
+Note: Always monitor your AWS account for costs and clean up resources when not in use.
